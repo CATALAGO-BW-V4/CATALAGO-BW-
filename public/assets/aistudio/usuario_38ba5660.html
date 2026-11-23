@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Minha Conta — BW Parfum</title>
+<style>
+:root{
+  --gold:#C9A84C;--gold2:#E8C97E;--gold3:#9B7A2F;
+  --gold-light:rgba(201,168,76,.10);--gold-mid:rgba(201,168,76,.18);
+  --bg:#F8F5EF;--bg2:#FFFFFF;--bg3:#F2EDE4;--bg4:#EAE4D8;
+  --border:#E0D8CC;--border2:#D0C8BC;
+  --text:#1C1710;--text2:#4A3F30;--text3:#8A7D6A;
+  --green:#1E9E55;--green-bg:rgba(30,158,85,.09);--green-bd:rgba(30,158,85,.22);
+  --red:#C0392B;--red-bg:rgba(192,57,43,.08);--red-bd:rgba(192,57,43,.22);
+  --blue:#1565C0;
+  --shadow:0 2px 14px rgba(0,0,0,.07);
+  --shadow2:0 6px 28px rgba(0,0,0,.11);
+  --r:14px;--t:.22s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,textarea,select{font-family:inherit;outline:none}
+a{text-decoration:none;color:inherit}
+.hide{display:none!important}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg3)}
+::-webkit-scrollbar-thumb{background:var(--gold3);border-radius:3px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ══ LOADING ══ */
+#loading{
+  position:fixed;inset:0;
+  background:linear-gradient(135deg,#FAF7F0,#F0EBE0);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:18px;z-index:9999;transition:opacity .4s
+}
+.ld-ring{
+  width:44px;height:44px;border-radius:50%;
+  border:3px solid var(--bg4);border-top-color:var(--gold);
+  animation:spin .85s linear infinite
+}
+#loading p{color:var(--text3);font-size:11px;letter-spacing:3px;font-weight:600}
+
+/* ══ TOASTS ══ */
+#toasts{
+  position:fixed;bottom:24px;right:14px;z-index:9500;
+  display:flex;flex-direction:column;gap:7px;
+  align-items:flex-end;max-width:calc(100vw - 28px)
+}
+.tst{
+  padding:11px 18px;border-radius:12px;font-size:13px;font-weight:600;
+  background:var(--bg2);border:1.5px solid var(--border);
+  box-shadow:var(--shadow2);
+  opacity:0;transform:translateX(30px);transition:all .3s
+}
+.tst.show{opacity:1;transform:none}
+.tst.ok{border-color:var(--green);color:var(--green)}
+.tst.er{border-color:var(--red);color:var(--red)}
+.tst.ts{border-color:var(--gold);color:var(--gold3)}
+
+/* ══ HEADER ══ */
+header{
+  background:rgba(255,255,255,.97);
+  border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:500;
+  backdrop-filter:blur(14px);
+  box-shadow:0 1px 8px rgba(0,0,0,.06)
+}
+.hdr{max-width:900px;margin:0 auto;padding:0 20px;height:68px;
+  display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-img{
+  width:46px;height:46px;border-radius:50%;object-fit:cover;
+  box-shadow:0 0 0 2.5px var(--gold),0 2px 10px rgba(201,168,76,.25)
+}
+.logo strong{color:var(--gold3);font-size:15px;letter-spacing:3px}
+.logo span{color:var(--text3);font-size:9px;letter-spacing:3px;display:block}
+.hdr-back{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  padding:8px 18px;background:var(--bg3);
+  border:1.5px solid var(--border2);border-radius:20px;
+  color:var(--text2);font-size:13px;font-weight:600;transition:all var(--t)
+}
+.hdr-back:hover{border-color:var(--gold);color:var(--gold3);background:var(--gold-light)}
+
+/* ══ LAYOUT ══ */
+.main{max-width:900px;margin:0 auto;padding:28px 20px 80px}
+.page-title{
+  font-size:21px;font-weight:800;color:var(--gold3);
+  letter-spacing:1.5px;margin-bottom:22px;
+  display:flex;align-items:center;gap:10px
+}
+
+/* ══ TABS ══ */
+.tabs-bar{
+  display:flex;background:var(--bg2);
+  border:1.5px solid var(--border);border-radius:16px;
+  padding:5px;gap:4px;margin-bottom:22px;
+  flex-wrap:wrap;box-shadow:var(--shadow)
+}
+.tab-btn{
+  flex:1;min-width:fit-content;padding:10px 14px;
+  border-radius:11px;font-size:13px;font-weight:600;
+  color:var(--text3);transition:all var(--t);white-space:nowrap
+}
+.tab-btn:hover{color:var(--text2);background:var(--bg3)}
+.tab-btn.on{
+  background:linear-gradient(135deg,var(--gold3),var(--gold));
+  color:#fff;box-shadow:0 2px 10px rgba(201,168,76,.28)
+}
+.tab-panel{display:none;animation:fadeUp .2s ease}
+.tab-panel.on{display:block}
+
+/* ══ CARDS ══ */
+.card{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:18px;padding:24px;margin-bottom:16px;
+  box-shadow:var(--shadow)
+}
+.card h3{
+  color:var(--gold3);font-size:12px;letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+  padding-bottom:13px;border-bottom:1px solid var(--border)
+}
+
+/* ══ PERFIL TOPO ══ */
+.perfil-top{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:20px;padding-bottom:18px;
+  border-bottom:1.5px solid var(--border)
+}
+.av{
+  width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold3),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:24px;font-weight:800;
+  flex-shrink:0;
+  box-shadow:0 4px 14px rgba(201,168,76,.3),0 0 0 3px var(--bg2),0 0 0 5px var(--gold)
+}
+.perfil-top h2{font-size:17px;font-weight:700;color:var(--text);margin-bottom:3px}
+.perfil-top p{color:var(--text3);font-size:13px}
+
+/* ══ CAMPOS ══ */
+.campo{margin-bottom:14px;position:relative}
+.campo label{
+  display:block;color:var(--text3);font-size:11px;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px
+}
+.campo input,
+.campo select{
+  width:100%;padding:11px 14px;
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:10px;color:var(--text);font-size:14px;transition:all var(--t)
+}
+.campo input:focus,
+.campo select:focus{
+  border-color:var(--gold);background:var(--bg2);
+  box-shadow:0 0 0 3px rgba(201,168,76,.13)
+}
+.campo input[readonly]{
+  opacity:.65;cursor:not-allowed;background:var(--bg4)
+}
+/* toggle senha */
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:44px}
+.btn-eye{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;color:var(--text3);font-size:16px;
+  padding:0;line-height:1;transition:color var(--t)
+}
+.btn-eye:hover{color:var(--gold3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+
+/* ══ BOTÕES ══ */
+.btn-gold{
+  padding:12px 24px;
+  background:linear-gradient(135deg,var(--gold3),var(--gold));
+  color:#fff;border-radius:10px;font-size:14px;font-weight:700;
+  transition:all var(--t);
+  box-shadow:0 2px 10px rgba(201,168,76,.22)
+}
+.btn-gold:hover{
+  box-shadow:0 5px 18px rgba(201,168,76,.38);
+  transform:translateY(-1px)
+}
+.btn-gold:disabled{opacity:.6;cursor:wait;transform:none;box-shadow:none}
+.btn-red{
+  padding:11px 22px;background:var(--red-bg);color:var(--red);
+  border:1.5px solid var(--red-bd);border-radius:10px;
+  font-size:13px;font-weight:600;transition:all var(--t)
+}
+.btn-red:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* ══ ENDEREÇO ══ */
+.cep-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:14px}
+.cep-row .campo{flex:1;margin-bottom:0}
+.btn-cep{
+  padding:11px 16px;background:var(--bg3);
+  border:1.5px solid var(--border);border-radius:10px;
+  color:var(--gold3);font-size:13px;font-weight:600;
+  white-space:nowrap;transition:all var(--t);height:44px;
+  display:flex;align-items:center;gap:5px
+}
+.btn-cep:hover{border-color:var(--gold);background:var(--gold-light)}
+
+/* ══ PEDIDOS ══ */
+.ped-empty{text-align:center;padding:50px 20px;color:var(--text3)}
+.ped-empty .pe-ico{font-size:52px;opacity:.22;margin-bottom:14px}
+.ped-empty p{font-size:14px;margin-bottom:6px}
+.ped-item{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:16px;padding:18px;margin-bottom:14px;
+  transition:all var(--t)
+}
+.ped-item:hover{
+  border-color:rgba(201,168,76,.35);
+  box-shadow:0 4px 18px rgba(201,168,76,.1)
+}
+.ped-hdr{
+  display:flex;align-items:center;flex-wrap:wrap;
+  gap:8px;margin-bottom:10px
+}
+.ped-hdr strong{font-size:14px;color:var(--text)}
+.ped-date{color:var(--text3);font-size:12px}
+.ped-total{color:var(--gold3);font-size:16px;font-weight:800;margin-left:auto}
+.ped-status{
+  font-size:10px;font-weight:700;padding:4px 10px;
+  border-radius:10px;text-transform:uppercase;
+  letter-spacing:.5px;white-space:nowrap
+}
+.ps-pend{background:rgba(230,130,0,.1);color:#B85C00}
+.ps-conf{background:rgba(30,158,85,.1);color:#1E7A45}
+.ps-prep{background:rgba(103,58,183,.1);color:#5C3DB0}
+.ps-env{background:rgba(21,101,192,.1);color:#1565C0}
+.ps-sai{background:rgba(230,81,0,.1);color:#BF4000}
+.ps-ent{background:rgba(30,158,85,.16);color:#155E36}
+.ps-canc{background:var(--red-bg);color:var(--red)}
+.ped-itens{color:var(--text3);font-size:12.5px;line-height:1.6;margin-bottom:10px}
+.ped-pag{font-size:12px;color:var(--text3);margin-bottom:6px}
+.ped-wpp{margin-top:8px}
+.btn-wpp-ped{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 16px;
+  background:var(--green-bg);color:var(--green);
+  border:1.5px solid var(--green-bd);border-radius:20px;
+  font-size:12px;font-weight:600;transition:all var(--t)
+}
+.btn-wpp-ped:hover{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ══ TIMELINE ══ */
+.timeline{margin:14px 0;padding:0 4px}
+.tl-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:4px}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+.tl-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--border2);background:var(--bg3);
+  flex-shrink:0;transition:all var(--t);margin-top:3px
+}
+.tl-dot.done{background:var(--gold);border-color:var(--gold)}
+.tl-dot.current{
+  background:var(--gold3);border-color:var(--gold3);
+  box-shadow:0 0 0 4px rgba(201,168,76,.18)
+}
+.tl-line{width:2px;flex:1;background:var(--border);min-height:20px;margin-top:2px}
+.tl-line.done{background:var(--gold)}
+.tl-info{padding-bottom:14px;flex:1}
+.tl-label{font-size:12px;font-weight:600;color:var(--text3)}
+.tl-label.done{color:var(--text2)}
+.tl-label.current{color:var(--gold3);font-weight:700}
+
+/* ══ RASTREIO ══ */
+.rastreio-box{
+  background:var(--gold-light);border:1.5px solid var(--gold-mid);
+  border-radius:12px;padding:14px;margin-top:10px
+}
+.rastreio-box p{
+  font-size:12px;color:var(--text2);margin-bottom:4px;
+  display:flex;align-items:center;gap:6px
+}
+.rastreio-box a{
+  color:var(--gold3);text-decoration:underline;
+  word-break:break-all;font-size:12px
+}
+.rastreio-box .rt-label{
+  font-size:10px;font-weight:700;color:var(--gold3);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:8px
+}
+
+/* ══ FORÇA SENHA ══ */
+.pass-strength{
+  height:4px;border-radius:2px;background:var(--bg4);
+  margin-top:6px;transition:all var(--t)
+}
+.ps-weak{background:var(--red);width:33%}
+.ps-med{background:var(--gold);width:66%}
+.ps-strong{background:var(--green);width:100%}
+.pass-hint{
+  font-size:11px;color:var(--text3);margin-top:4px;min-height:16px
+}
+
+/* ══ ALERTAS ══ */
+.alert{
+  padding:11px 15px;border-radius:10px;font-size:13px;
+  margin-bottom:14px;display:flex;align-items:flex-start;gap:8px
+}
+.alert-ok{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green-bd)}
+.alert-er{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd)}
+.alert-info{background:var(--gold-light);color:var(--gold3);border:1.5px solid var(--gold-mid)}
+
+/* ══ PARCELAMENTO MODAL ══ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:8000;display:flex;align-items:center;
+  justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .25s
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:20px;padding:28px;width:100%;max-width:440px;
+  box-shadow:var(--shadow2);
+  transform:translateY(20px);transition:transform .25s
+}
+.modal-overlay.open .modal-box{transform:none}
+.modal-box h2{
+  font-size:16px;font-weight:800;color:var(--gold3);
+  margin-bottom:6px;display:flex;align-items:center;gap:8px
+}
+.modal-box .modal-sub{
+  font-size:13px;color:var(--text3);margin-bottom:20px
+}
+.parc-opcoes{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.parc-op{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border:2px solid var(--border);
+  border-radius:12px;cursor:pointer;transition:all var(--t);
+  background:var(--bg3)
+}
+.parc-op:hover{border-color:var(--gold);background:var(--gold-light)}
+.parc-op.sel{border-color:var(--gold3);background:var(--gold-light)}
+.parc-op input[type=radio]{
+  accent-color:var(--gold3);width:16px;height:16px;flex-shrink:0
+}
+.parc-op-txt{flex:1}
+.parc-op-txt strong{font-size:14px;color:var(--text);display:block}
+.parc-op-txt span{font-size:12px;color:var(--text3)}
+.parc-op-val{font-size:15px;font-weight:800;color:var(--gold3)}
+.modal-btns{display:flex;gap:10px;flex-wrap:wrap}
+.modal-btns .btn-gold{flex:1}
+.btn-ghost{
+  padding:12px 20px;background:var(--bg3);
+  color:var(--text2);border:1.5px solid var(--border);
+  border-radius:10px;font-size:14px;font-weight:600;
+  transition:all var(--t)
+}
+.btn-ghost:hover{border-color:var(--border2);background:var(--bg4)}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:600px){
+  .main{padding:18px 14px 80px}
+  .card{padding:18px}
+  .hdr{height:60px}
+  .tab-btn{font-size:12px;padding:8px 10px}
+  .ped-total{font-size:14px}
+  .modal-box{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="ld-ring"></div><p>CARREGANDO...</p></div>
+<div id="toasts"></div>
+
+<!-- ══ MODAL PARCELAMENTO ══ -->
+<div class="modal-overlay" id="modalParc">
+  <div class="modal-box">
+    <h2>💳 Forma de Pagamento</h2>
+    <p class="modal-sub" id="modalParcSub">Escolha como deseja pagar</p>
+    <div class="parc-opcoes" id="parcOpcoes"></div>
+    <div class="modal-btns">
+      <button class="btn-ghost" id="btnFecharParc">Cancelar</button>
+      <button class="btn-gold" id="btnConfirmarParc">✅ Confirmar e Enviar</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="hdr">
+    <a class="logo" href="index.html">
+      <img class="logo-img" id="logoImg"
+        src="https://i.ibb.co/8DQfJ4Dk" alt="BW"
+        onerror="this.src='https://i.ibb.co/8DQfJ4Dk'"/>
+      <div><strong>BW PARFUM</strong><span>IMPORTS</span></div>
+    </a>
+    <a class="hdr-back" href="index.html">← Voltar à Loja</a>
+  </div>
+</header>
+
+<div class="main">
+  <div class="page-title">👤 Minha Conta</div>
+
+  <div class="tabs-bar">
+    <button class="tab-btn on" data-tab="perfil">👤 Perfil</button>
+    <button class="tab-btn" data-tab="endereco">📍 Endereço</button>
+    <button class="tab-btn" data-tab="pedidos">📦 Pedidos</button>
+    <button class="tab-btn" data-tab="senha">🔐 Senha</button>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="tab-panel on" id="tabPerfil">
+    <div class="card">
+      <div class="perfil-top">
+        <div class="av" id="avInicial">?</div>
+        <div>
+          <h2 id="perfilNomeTop">—</h2>
+          <p id="perfilEmailTop">—</p>
+        </div>
+      </div>
+      <div id="alertPerfil"></div>
+      <div class="campo">
+        <label>Nome completo</label>
+        <input id="pNome" type="text" placeholder="Seu nome completo" autocomplete="name"/>
+      </div>
+      <div class="campo">
+        <label>E-mail</label>
+        <input id="pEmail" type="email" readonly autocomplete="off"/>
+      </div>
+      <div class="campo">
+        <label>WhatsApp</label>
+        <input id="pWpp" type="tel" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel" inputmode="numeric"/>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn-gold" id="btnSalvarPerfil">💾 Salvar Perfil</button>
+        <button class="btn-red" id="btnLogout">🚪 Sair da Conta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENDEREÇO -->
+  <div class="tab-panel" id="tabEndereco">
+    <div class="card">
+      <h3>📍 Endereço de Entrega</h3>
+      <div id="alertEnd"></div>
+      <div class="cep-row">
+        <div class="campo">
+          <label>CEP</label>
+          <input id="eCep" type="text" placeholder="00000-000"
+            maxlength="9" inputmode="numeric" autocomplete="postal-code"/>
+        </div>
+        <button class="btn-cep" id="btnBuscarCep">🔍 Buscar</button>
+      </div>
+      <div class="campo">
+        <label>Endereço (rua + número)</label>
+        <input id="eEnd" type="text" placeholder="Ex: Rua das Flores, 123" autocomplete="street-address"/>
+      </div>
+      <div class="grid2">
+        <div class="campo">
+          <label>Complemento</label>
+          <input id="eComp" type="text" placeholder="Apto, bloco, casa..."/>
+        </div>
+        <div class="campo">
+          <label>Bairro</label>
+          <input id="eBairro" type="text" placeholder="Bairro"/>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="campo">
+          <label>Cidade</label>
+          <input id="eCidade" type="text" placeholder="Cidade"/>
+        </div>
+        <div class="campo">
+          <label>Estado</label>
+          <select id="eEstado">
+            <option value="">UF</option>
+            <option>AC</option><option>AL</option><option>AM</option><option>AP</option>
+            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+            <option>GO</option><option>MA</option><option>MG</option><option>MS</option>
+            <option>MT</option><option>PA</option><option>PB</option><option>PE</option>
+            <option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
+            <option>RO</option><option>RR</option><option>RS</option><option>SC</option>
+            <option>SE</option><option selected>SP</option><option>TO</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-gold" id="btnSalvarEnd">💾 Salvar Endereço</button>
+    </div>
+  </div>
+
+  <!-- PEDIDOS -->
+  <div class="tab-panel" id="tabPedidos">
+    <div class="card">
+      <h3>📦 Meus Pedidos</h3>
+      <div id="histList">
+        <div style="text-align:center;padding:40px;color:var(--text3)">
+          <div class="ld-ring" style="margin:0 auto 14px"></div>
+          <p style="font-size:13px">Carregando pedidos...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SENHA -->
+  <div class="tab-panel" id="tabSenha">
+    <div class="card">
+      <h3>🔐 Alterar Senha</h3>
+      <div id="alertSenha"></div>
+      <div class="campo">
+        <label>Senha atual</label>
+        <div class="pass-wrap">
+          <input id="senhaAtual" type="password"
+            placeholder="Sua senha atual" autocomplete="current-password"/>
+          <button class="btn-eye" type="button" data-target="senhaAtual">👁</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label>Nova senha</label>
+        <div class="pass-wrap">
+          <input id="senhaNova" type="password"
+            placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+          <button class="btn-eye" type="button" data-target="senhaNova">👁</button>
+        </div>
+        <div class="pass-strength" id="passStrength"></div>
+        <div class="pass-hint" id="passHint"></div>
+      </div>
+      <div class="campo">
+        <label>Confirmar nova senha</label>
+        <div class="pass-wrap">
+          <input id="senhaConf" type="password"
+            placeholder="Repita a nova senha" autocomplete="new-password"/>
+          <button class="btn-eye" type="button" data-target="senhaConf">👁</button>
+        </div>
+      </div>
+      <button class="btn-gold" id="btnAlterarSenha" style="margin-top:6px">
+        🔐 Alterar Senha
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>✉️ Recuperar por E-mail</h3>
+      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;line-height:1.6">
+        Enviaremos um link de redefinição para o e-mail cadastrado na sua conta.
+      </p>
+      <button class="btn-gold" id="btnResetSenha">✉️ Enviar Link de Redefinição</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{
+  getAuth,onAuthStateChanged,signOut,
+  EmailAuthProvider,reauthenticateWithCredential,
+  updatePassword,sendPasswordResetEmail
+}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import{
+  getFirestore,doc,getDoc,setDoc,collection,
+  query,where,limit,onSnapshot,serverTimestamp
+}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+/* ── CONFIG ── */
+const FC={
+  apiKey:"AIzaSyDbVyeYpm3F5Tw-zR2sJhO7wTWx_1xjWrI",
+  authDomain:"catalogo-bw.firebaseapp.com",
+  projectId:"catalogo-bw",
+  storageBucket:"catalogo-bw.firebasestorage.app",
+  messagingSenderId:"709888254146",
+  appId:"1:709888254146:web:c82e1b7b24ca36086e5b5b"
+};
+const app=initializeApp(FC);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+/* ── HELPERS ── */
+const g=id=>document.getElementById(id);
+const gv=id=>(g(id)||{}).value||'';
+const sv=(id,v)=>{if(g(id))g(id).value=v??'';};
+const fp=n=>{
+  const v=parseFloat(n||0);
+  return isNaN(v)?'0,00':v.toFixed(2).replace('.',',');
+};
+const LOGO='https://i.ibb.co/8DQfJ4Dk';
+const WPP_LOJA='5511999999999';
+
+function hideLoading(){
+  const l=g('loading');if(!l)return;
+  l.style.opacity='0';setTimeout(()=>l.style.display='none',400);
+}
+
+window.toast=function(msg,type='ts'){
+  const c=g('toasts');if(!c)return;
+  const t=document.createElement('div');
+  t.className=`tst ${type}`;t.textContent=msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),350);},3500);
+};
+
+function showAlert(id,msg,type='info'){
+  const el=g(id);if(!el)return;
+  const ico={ok:'✅',er:'❌',info:'ℹ️'};
+  el.innerHTML=`<div class="alert alert-${type}">
+    <span>${ico[type]||'ℹ️'}</span><span>${msg}</span>
+  </div>`;
+}
+function clearAlert(id){const el=g(id);if(el)el.innerHTML='';}
+
+/* ── ESTADO ── */
+let currentUser=null;
+let _unsubPedidos=null;
+let _settings={};
+
+/* ── TABS ── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+    this.classList.add('on');
+    const id='tab'+this.dataset.tab.charAt(0).toUpperCase()+this.dataset.tab.slice(1);
+    g(id)?.classList.add('on');
+  });
+});
+
+/* ── TOGGLE SENHA ── */
+document.querySelectorAll('.btn-eye').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const inp=g(this.dataset.target);
+    if(!inp)return;
+    inp.type=inp.type==='password'?'text':'password';
+    this.textContent=inp.type==='password'?'👁':'🙈';
+  });
+});
+
+/* ── MÁSCARA WPP ── */
+g('pWpp')?.addEventListener('input',function(){
+  let v=this.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>=7){
+    v=`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+  }else if(v.length>=3){
+    v=`(${v.slice(0,2)}) ${v.slice(2)}`;
+  }
+  this.value=v;
+});
+
+/* ── AUTH ── */
+const _timeout=setTimeout(()=>{hideLoading();window.location.href='index.html';},10000);
+onAuthStateChanged(auth,async user=>{
+  clearTimeout(_timeout);
+  if(!user){hideLoading();window.location.href='index.html';return;}
+  currentUser=user;
+  try{
+    const adm=await getDoc(doc(db,'admins',user.uid));
+    if(adm.exists()){hideLoading();window.location.href='admin.html';return;}
+  }catch{}
+  await Promise.allSettled([loadSettings(),loadPerfil()]);
+  loadHistorico(user);
+  hideLoading();
+});
+
+/* ── SETTINGS ── */
+async function loadSettings(){
+  try{
+    const d=await getDoc(doc(db,'config','settings'));
+    if(d.exists()){
+      _settings=d.data();
+      if(_settings.logo){
+        const li=g('logoImg');
+        if(li){li.src=_settings.logo;li.onerror=()=>li.src=LOGO;}
+      }
+    }
+  }catch{}
+}
+
+/* ── PERFIL ── */
+async function loadPerfil(){
+  if(!currentUser)return;
+  sv('pEmail',currentUser.email||'');
+  try{
+    const d=await getDoc(doc(db,'clients',currentUser.uid));
+    const data=d.exists()?d.data():{};
+    const wppRaw=data.wpp||'';
+    const wppFmt=wppRaw.length===11
+      ?`(${wppRaw.slice(0,2)}) ${wppRaw.slice(2,7)}-${wppRaw.slice(7)}`
+      :wppRaw;
+    sv('pNome',data.nome||currentUser.displayName||'');
+    sv('pWpp',wppFmt);
+    sv('eCep',(data.cep||'').replace(/(\d{5})(\d{3})/,'$1-$2'));
+    sv('eEnd',data.endereco||'');
+    sv('eComp',data.complemento||'');
+    sv('eBairro',data.bairro||'');
+    sv('eCidade',data.cidade||'');
+    if(g('eEstado'))g('eEstado').value=data.estado||'SP';
+    const nome=data.nome||currentUser.email?.split('@')[0]||'Usuário';
+    if(g('perfilNomeTop'))g('perfilNomeTop').textContent=nome;
+    if(g('perfilEmailTop'))g('perfilEmailTop').textContent=currentUser.email||'';
+    const ini=nome.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+    if(g('avInicial'))g('avInicial').textContent=ini||'U';
+  }catch(e){console.warn('loadPerfil:',e);}
+}
+
+g('btnSalvarPerfil')?.addEventListener('click',async function(){
+  if(!currentUser)return;
+  const nome=gv('pNome').trim();
+  if(!nome){showAlert('alertPerfil','Informe seu nome.','er');return;}
+  this.disabled=true;this.textContent='Salvando...';
+  try{
+    const wppNum=gv('pWpp').replace(/\D/g,'');
+    await setDoc(doc(db,'clients',currentUser.uid),
+      {nome,wpp:wppNum,updAt:serverTimestamp()},{merge:true});
+    if(g('perfilNomeTop'))g('perfilNomeTop').textContent=nome;
+    const ini=nome.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+    if(g('avInicial'))g('avInicial').textContent=ini||'U';
+    showAlert('alertPerfil','Perfil atualizado com sucesso!','ok');
+    setTimeout(()=>clearAlert('alertPerfil'),3000);
+  }catch(e){showAlert('alertPerfil','Erro: '+e.message,'er');}
+  finally{this.disabled=false;this.textContent='💾 Salvar Perfil';}
+});
+
+g('btnLogout')?.addEventListener('click',async()=>{
+  if(!confirm('Deseja sair da sua conta?'))return;
+  if(_unsubPedidos){_unsubPedidos();_unsubPedidos=null;}
+  await signOut(auth);
+  window.location.href='index.html';
+});
+
+/* ── ENDEREÇO ── */
+g('eCep')?.addEventListener('input',function(){
+  let v=this.value.replace(/\D/g,'');
+  if(v.length>5)v=v.slice(0,5)+'-'+v.slice(5,8);
+  this.value=v;
+  /* Busca automática ao completar 8 dígitos */
+  if(v.replace(/\D/g,'').length===8)g('btnBuscarCep')?.click();
+});
+
+g('btnBuscarCep')?.addEventListener('click',async function(){
+  const cep=gv('eCep').replace(/\D/g,'');
+  if(cep.length!==8){showAlert('alertEnd','CEP inválido. Verifique e tente novamente.','er');return;}
+  this.textContent='Buscando...';this.disabled=true;
+  try{
+    const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d=await r.json();
+    if(d.erro){showAlert('alertEnd','CEP não encontrado.','er');return;}
+    sv('eEnd',d.logradouro||'');
+    sv('eBairro',d.bairro||'');
+    sv('eCidade',d.localidade||'');
+    if(g('eEstado'))g('eEstado').value=d.uf||'SP';
+    clearAlert('alertEnd');
+    g('eComp')?.focus();
+  }catch{showAlert('alertEnd','Erro ao buscar CEP. Verifique sua conexão.','er');}
+  finally{this.textContent='🔍 Buscar';this.disabled=false;}
+});
+
+g('btnSalvarEnd')?.addEventListener('click',async function(){
+  if(!currentUser)return;
+  const cep=gv('eCep').replace(/\D/g,'');
+  const end=gv('eEnd').trim();
+  const cid=gv('eCidade').trim();
+  if(!cep||!end||!cid){
+    showAlert('alertEnd','Preencha pelo menos o CEP, endereço e cidade.','er');
+    return;
+  }
+  this.disabled=true;this.textContent='Salvando...';
+  try{
+    await setDoc(doc(db,'clients',currentUser.uid),{
+      cep,
+      endereco:end,
+      complemento:gv('eComp').trim(),
+      bairro:gv('eBairro').trim(),
+      cidade:cid,
+      estado:gv('eEstado'),
+      updAt:serverTimestamp()
+    },{merge:true});
+    showAlert('alertEnd','Endereço salvo com sucesso!','ok');
+    setTimeout(()=>clearAlert('alertEnd'),3000);
+  }catch(e){showAlert('alertEnd','Erro: '+e.message,'er');}
+  finally{this.disabled=false;this.textContent='💾 Salvar Endereço';}
+});
+
+/* ── SENHA ── */
+g('senhaNova')?.addEventListener('input',function(){
+  const bar=g('passStrength');
+  const hint=g('passHint');
+  if(!bar)return;
+  const v=this.value;
+  bar.className='pass-strength';
+  if(!v){if(hint)hint.textContent='';return;}
+  if(v.length<6){
+    bar.classList.add('ps-weak');
+    if(hint)hint.textContent='Senha muito curta';
+    return;
+  }
+  const forte=/[A-Z]/.test(v)&&/[0-9]/.test(v)&&v.length>=8;
+  if(forte){
+    bar.classList.add('ps-strong');
+    if(hint)hint.textContent='Senha forte ✓';
+  }else{
+    bar.classList.add('ps-med');
+    if(hint)hint.textContent='Adicione maiúsculas e números para senha forte';
+  }
+});
+
+g('btnAlterarSenha')?.addEventListener('click',async function(){
+  if(!currentUser)return;
+  const atual=gv('senhaAtual');
+  const nova=gv('senhaNova');
+  const conf=gv('senhaConf');
+  if(!atual||!nova||!conf){showAlert('alertSenha','Preencha todos os campos.','er');return;}
+  if(nova.length<6){showAlert('alertSenha','A nova senha deve ter pelo menos 6 caracteres.','er');return;}
+  if(nova!==conf){showAlert('alertSenha','As senhas não coincidem.','er');return;}
+  this.disabled=true;this.textContent='Alterando...';
+  try{
+    const cred=EmailAuthProvider.credential(currentUser.email,atual);
+    await reauthenticateWithCredential(currentUser,cred);
+    await updatePassword(currentUser,nova);
+    sv('senhaAtual','');sv('senhaNova','');sv('senhaConf','');
+    const bar=g('passStrength');if(bar)bar.className='pass-strength';
+    const hint=g('passHint');if(hint)hint.textContent='';
+    showAlert('alertSenha','Senha alterada com sucesso!','ok');
+    setTimeout(()=>clearAlert('alertSenha'),4000);
+  }catch(e){
+    const msg=
+      e.code==='auth/wrong-password'?'Senha atual incorreta.':
+      e.code==='auth/invalid-credential'?'Senha atual incorreta.':
+      e.code==='auth/too-many-requests'?'Muitas tentativas. Aguarde alguns minutos.':
+      'Erro: '+e.message;
+    showAlert('alertSenha',msg,'er');
+  }
+  finally{this.disabled=false;this.textContent='🔐 Alterar Senha';}
+});
+
+g('btnResetSenha')?.addEventListener('click',async function(){
+  if(!currentUser?.email)return;
+  this.disabled=true;this.textContent='Enviando...';
+  try{
+    await sendPasswordResetEmail(auth,currentUser.email);
+    showAlert('alertSenha',`Link enviado para ${currentUser.email}. Verifique sua caixa de entrada.`,'ok');
+  }catch(e){showAlert('alertSenha','Erro: '+e.message,'er');}
+  finally{this.disabled=false;this.textContent='✉️ Enviar Link de Redefinição';}
+});
+
+/* ══════════════════════════════════════════
+   PEDIDOS
+══════════════════════════════════════════ */
+function loadHistorico(user){
+  const el=g('histList');
+  if(!el||!user)return;
+  el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3)">
+    <div class="ld-ring" style="margin:0 auto 14px"></div>
+    <p style="font-size:13px">Carregando pedidos...</p>
+  </div>`;
+  if(_unsubPedidos){_unsubPedidos();_unsubPedidos=null;}
+  try{
+    const q=query(
+      collection(db,'pedidos'),
+      where('uid','==',user.uid),
+      limit(50)
+    );
+    _unsubPedidos=onSnapshot(q,
+      snap=>{
+        if(!snap.empty){
+          const lista=snap.docs
+            .map(d=>({id:d.id,...d.data()}))
+            .sort((a,b)=>{
+              const ta=a.criadoEm?.toDate?.()?.getTime()||0;
+              const tb=b.criadoEm?.toDate?.()?.getTime()||0;
+              return tb-ta;
+            });
+          el.innerHTML=lista.map(p=>renderPed(p)).join('');
+        }else{
+          trySubcolecao(user);
+        }
+      },
+      err=>{
+        console.warn('Pedidos global:',err.code);
+        trySubcolecao(user);
+      }
+    );
+  }catch(e){
+    console.warn('Pedidos query:',e);
+    trySubcolecao(user);
+  }
+}
+
+function trySubcolecao(user){
+  const el=g('histList');if(!el)return;
+  if(_unsubPedidos){_unsubPedidos();_unsubPedidos=null;}
+  try{
+    _unsubPedidos=onSnapshot(
+      query(collection(db,'clients',user.uid,'pedidos'),limit(50)),
+      snap=>{
+        if(snap.empty){
+          el.innerHTML=`<div class="ped-empty">
+            <div class="pe-ico">📦</div>
+            <p>Nenhum pedido ainda.</p>
+            <p style="font-size:12px;opacity:.6;margin-top:6px">
+              Seus pedidos aparecerão aqui após a compra.
+            </p>
+          </div>`;
+          return;
+        }
+        const lista=snap.docs
+          .map(d=>({id:d.id,...d.data()}))
+          .sort((a,b)=>{
+            const ta=a.criadoEm?.toDate?.()?.getTime()||0;
+            const tb=b.criadoEm?.toDate?.()?.getTime()||0;
+            return tb-ta;
+          });
+        el.innerHTML=lista.map(p=>renderPed(p)).join('');
+      },
+      err=>{
+        el.innerHTML=`<div class="ped-empty">
+          <div class="pe-ico">⚠️</div>
+          <p>Erro ao carregar pedidos.</p>
+          <p style="font-size:12px;color:var(--red);margin-top:6px">${err.message||err.code}</p>
+        </div>`;
+      }
+    );
+  }catch(e){
+    el.innerHTML=`<div class="ped-empty">
+      <div class="pe-ico">⚠️</div>
+      <p>Erro ao carregar pedidos.</p>
+      <p style="font-size:12px;color:var(--red);margin-top:6px">${e.message}</p>
+    </div>`;
+  }
+}
+
+/* ── RENDER PEDIDO ── */
+const STATUS_LABEL={
+  pendente:'⏳ Pendente',confirmado:'✅ Confirmado',
+  em_preparo:'🔧 Em Preparo',enviado:'🚚 Enviado',
+  saiu_entrega:'📍 Saiu p/ Entrega',entregue:'🎉 Entregue',
+  cancelado:'❌ Cancelado'
+};
+const STATUS_CLS={
+  pendente:'ps-pend',confirmado:'ps-conf',em_preparo:'ps-prep',
+  enviado:'ps-env',saiu_entrega:'ps-sai',entregue:'ps-ent',cancelado:'ps-canc'
+};
+const ETAPAS=[
+  {key:'pendente',label:'Pedido Recebido'},
+  {key:'confirmado',label:'Confirmado'},
+  {key:'em_preparo',label:'Em Preparo'},
+  {key:'enviado',label:'Enviado'},
+  {key:'saiu_entrega',label:'Saiu p/ Entrega'},
+  {key:'entregue',label:'Entregue'}
+];
+const ORDEM_STATUS={
+  pendente:0,confirmado:1,em_preparo:2,
+  enviado:3,saiu_entrega:4,entregue:5,cancelado:-1
+};
+
+function renderTimeline(status){
+  if(status==='cancelado')
+    return`<div style="color:var(--red);font-size:13px;padding:8px 0">❌ Pedido cancelado.</div>`;
+  const idx=ORDEM_STATUS[status]??0;
+  return`<div class="timeline">${ETAPAS.map((e,i)=>{
+    const done=i<idx,cur=i===idx,isLast=i===ETAPAS.length-1;
+    return`<div class="tl-step">
+      <div class="tl-left">
+        <div class="tl-dot${done||cur?' done':''}${cur?' current':''}"></div>
+        ${!isLast?`<div class="tl-line${done?' done':''}"></div>`:''}
+      </div>
+      <div class="tl-info">
+        <div class="tl-label${done?' done':''}${cur?' current':''}">${e.label}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderRastreio(p){
+  const rt=p.rastreio||p.entrega||{};
+  let codigo='',url='',tipo='',prev='';
+  if(typeof rt==='string'){
+    if(rt.startsWith('http')){url=rt;}else{codigo=rt;}
+  }else{
+    codigo=rt.codigo||rt.codigoRastreio||'';
+    url=rt.url||rt.urlRastreio||'';
+    tipo=rt.tipo||'';
+    prev=rt.previsao||'';
+  }
+  if(!codigo&&!url&&!tipo)return'';
+  const tipoLabel={
+    retirada:'🏪 Retirada',uber:'🚗 Uber/Motoboy',
+    correios:'📮 Correios',transportadora:'🏭 Transportadora',
+    outro:'📦 Entrega'
+  };
+  return`<div class="rastreio-box">
+    <div class="rt-label">📦 Informações de Entrega</div>
+    ${tipo?`<p>🚚 ${tipoLabel[tipo]||tipo}</p>`:''}
+    ${codigo?`<p>🔎 Código: <strong style="color:var(--gold3)">${codigo}</strong></p>`:''}
+    ${url?`<p>🔗 Rastreio: <a href="${url}" target="_blank" rel="noopener">${url}</a></p>`:''}
+    ${prev?`<p>📅 Previsão: <strong style="color:var(--gold3)">${prev}</strong></p>`:''}
+  </div>`;
+}
+
+function renderPed(p){
+  const st=p.status||'pendente';
+  const stCls=STATUS_CLS[st]||'ps-pend';
+  const stLbl=STATUS_LABEL[st]||st;
+  const dt=p.criadoEm?.toDate?.()?.toLocaleDateString('pt-BR',
+    {day:'2-digit',month:'2-digit',year:'numeric'})||
+    (typeof p.data==='string'?p.data:'—');
+  const itens=Array.isArray(p.itens)
+    ?p.itens.map(i=>`${i.qty||i.qtd||1}× ${i.nome||i.name||'?'}`).join(', ')
+    :(p.resumo||'—');
+  const total=p.total||p.subtotal||0;
+
+  /* Monta info de pagamento com parcelamento se houver */
+  let pagInfo='';
+  if(p.pagamento||p.pag){
+    const pag=p.pagamento||p.pag||'';
+    const parc=p.parcelas;
+    const parcVal=p.valorParcela;
+    if(parc&&parc>1&&parcVal){
+      pagInfo=`<p class="ped-pag">💳 ${pag} — ${parc}× de R$ ${fp(parcVal)}</p>`;
+    }else{
+      pagInfo=`<p class="ped-pag">💳 ${pag}</p>`;
+    }
+  }
+
+  const wppLoja=(_settings.wpp||WPP_LOJA).replace(/\D/g,'');
+  const wppMsg=encodeURIComponent(
+    `Olá! Quero verificar meu pedido.\nNome: ${p.nome||''}\nData: ${dt}\nTotal: R$ ${fp(total)}`
+  );
+
+  return`<div class="ped-item">
+    <div class="ped-hdr">
+      <strong>${p.nome||'Pedido'}</strong>
+      <span class="ped-date">📅 ${dt}</span>
+      <span class="ped-status ${stCls}">${stLbl}</span>
+      <span class="ped-total">R$ ${fp(total)}</span>
+    </div>
+    <div class="ped-itens">${itens}</div>
+    ${pagInfo}
+    ${renderTimeline(st)}
+    ${renderRastreio(p)}
+    <div class="ped-wpp">
+      <a class="btn-wpp-ped"
+        href="https://wa.me/${wppLoja}?text=${wppMsg}"
+        target="_blank" rel="noopener">
+        💬 Falar sobre este pedido
+      </a>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   MODAL DE PARCELAMENTO (cartão)
+   Chamado externamente por index.html ao finalizar pedido
+   Exemplo: window.abrirModalParcelamento(total, dadosPedido, callbackEnvio)
+══════════════════════════════════════════ */
+window.abrirModalParcelamento=function(total,dadosPedido,onConfirm){
+  const overlay=g('modalParc');
+  const sub=g('modalParcSub');
+  const opcoes=g('parcOpcoes');
+  if(!overlay||!opcoes)return;
+
+  sub.textContent=`Total do pedido: R$ ${fp(total)}`;
+
+  /* Gera opções 1×, 2×, 3× */
+  const parcelas=[1,2,3];
+  opcoes.innerHTML=parcelas.map(n=>{
+    const val=total/n;
+    const label=n===1
+      ?`À vista`
+      :`${n}× sem juros`;
+    const sub2=n===1
+      ?`Pagamento único`
+      :`${n} parcelas de R$ ${fp(val)}`;
+    return`<label class="parc-op${n===1?' sel':''}">
+      <input type="radio" name="parcela" value="${n}"${n===1?' checked':''}/>
+      <div class="parc-op-txt">
+        <strong>${label}</strong>
+        <span>${sub2}</span>
+      </div>
+      <span class="parc-op-val">R$ ${fp(val)}</span>
+    </label>`;
+  }).join('');
+
+  /* Destaque visual na seleção */
+  opcoes.querySelectorAll('.parc-op').forEach(op=>{
+    const radio=op.querySelector('input[type=radio]');
+    radio?.addEventListener('change',()=>{
+      opcoes.querySelectorAll('.parc-op').forEach(o=>o.classList.remove('sel'));
+      if(radio.checked)op.classList.add('sel');
+    });
+  });
+
+  overlay.classList.add('open');
+
+  /* Confirmar */
+  const btnConf=g('btnConfirmarParc');
+  const btnFech=g('btnFecharParc');
+
+  const fechar=()=>overlay.classList.remove('open');
+
+  const confirmar=()=>{
+    const sel=opcoes.querySelector('input[name=parcela]:checked');
+    const parcelas=parseInt(sel?.value||1);
+    const valorParcela=total/parcelas;
+    fechar();
+    if(typeof onConfirm==='function'){
+      onConfirm({parcelas,valorParcela});
+    }
+  };
+
+  /* Remove listeners anteriores clonando */
+  const newConf=btnConf.cloneNode(true);
+  const newFech=btnFech.cloneNode(true);
+  btnConf.replaceWith(newConf);
+  btnFech.replaceWith(newFech);
+
+  g('btnConfirmarParc').addEventListener('click',confirmar);
+  g('btnFecharParc').addEventListener('click',fechar);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)fechar();},{once:true});
+};
+</script>
+</body>
+</html>

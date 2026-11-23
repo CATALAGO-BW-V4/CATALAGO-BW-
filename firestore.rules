@@ -1,0 +1,307 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'walef.gomes.jll@gmail.com' && request.auth.token.email_verified == true) ||
+        (request.auth.token.email == 'walef20111@hotmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) || data[field] == null || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isValidUrlField(data, field) {
+      return !(field in data) || data[field] == null || data[field] == '' || (
+        data[field] is string &&
+        data[field].size() <= 1000 &&
+        (data[field].matches('^https?://.*') || data[field].matches('^/src/assets/.*'))
+      );
+    }
+
+    function isValidProduto(data) {
+      return data.keys().hasAll(['nome', 'preco']) &&
+        data.keys().hasOnly([
+          'nome', 'name', 'titulo', 'marca', 'brand', 'preco', 'price', 'precoCartao',
+          'precoPix', 'pix', 'precoOld', 'de', 'estoqueQtd', 'estoque', 'stock',
+          'vol', 'ml', 'tamanho', 'cat', 'categoria', 'category', 'notas',
+          'desc', 'descricao', 'description', 'estoqueAlerta', 'ordem',
+          'ativo', 'dest', 'destaque', 'promo', 'promocao', 'est',
+          'imgUrl', 'imgPath', 'img', 'image', 'views', 'vendas',
+          'criadoEm', 'updAt', 'syncedAt'
+        ]) &&
+        isValidString(data.nome, 1, 160) &&
+        data.preco is number && data.preco >= 0 && data.preco <= 100000 &&
+        (!( 'precoPix' in data ) || (data.precoPix is number && data.precoPix >= 0 && data.precoPix <= 100000)) &&
+        (!( 'precoOld' in data ) || (data.precoOld is number && data.precoOld >= 0 && data.precoOld <= 100000)) &&
+        (!( 'estoqueQtd' in data ) || (data.estoqueQtd is number && data.estoqueQtd >= 0 && data.estoqueQtd <= 100000)) &&
+        isValidOptionalString(data, 'marca', 100) &&
+        isValidOptionalString(data, 'vol', 40) &&
+        isValidOptionalString(data, 'cat', 40) &&
+        isValidOptionalString(data, 'notas', 300) &&
+        isValidOptionalString(data, 'desc', 3000) &&
+        isValidUrlField(data, 'imgUrl') &&
+        (!( 'ativo' in data ) || data.ativo is bool) &&
+        (!( 'dest' in data ) || data.dest is bool) &&
+        (!( 'promo' in data ) || data.promo is bool);
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['nome', 'slug']) &&
+        data.keys().hasOnly(['nome', 'name', 'slug', 'ico', 'icon', 'img', 'imgUrl', 'hidden', 'ativo', 'criadoEm', 'updAt']) &&
+        isValidString(data.nome, 1, 80) &&
+        isValidString(data.slug, 1, 40) &&
+        data.slug.matches('^[a-zA-Z0-9_\\-]+$') &&
+        isValidOptionalString(data, 'ico', 16) &&
+        isValidOptionalString(data, 'icon', 16) &&
+        isValidUrlField(data, 'img') &&
+        (!( 'hidden' in data ) || data.hidden is bool);
+    }
+
+    function isValidClient(data) {
+      return data.keys().hasOnly([
+          'nome', 'email', 'wpp', 'cep', 'endereco', 'complemento',
+          'bairro', 'cidade', 'estado', 'favoritos', 'criadoEm', 'updAt'
+        ]) &&
+        isValidOptionalString(data, 'nome', 120) &&
+        isValidOptionalString(data, 'email', 160) &&
+        isValidOptionalString(data, 'wpp', 20) &&
+        isValidOptionalString(data, 'cep', 12) &&
+        isValidOptionalString(data, 'endereco', 240) &&
+        isValidOptionalString(data, 'complemento', 120) &&
+        isValidOptionalString(data, 'bairro', 100) &&
+        isValidOptionalString(data, 'cidade', 100) &&
+        isValidOptionalString(data, 'estado', 4) &&
+        (!( 'favoritos' in data ) || (data.favoritos is list && data.favoritos.size() <= 100 && (data.favoritos.size() == 0 || data.favoritos[0] is string)));
+    }
+
+    function isValidPedidoCreate(data) {
+      return data.keys().hasAll(['nome', 'wpp', 'pagamento', 'total', 'itens', 'status', 'criadoEm']) &&
+        data.keys().hasOnly([
+          'uid', 'nome', 'wpp', 'endereco', 'cidade', 'estado', 'cep', 'complemento',
+          'pagamento', 'parcelas', 'valorParcela', 'total', 'subtotal', 'desconto',
+          'frete', 'cupom', 'observacoes', 'obs', 'itens', 'resumo', 'status',
+          'rastreio', 'historicoStatus', 'criadoEm', 'updAt', 'entregueEm', 'pedidoGlobalId'
+        ]) &&
+        isValidString(data.nome, 1, 120) &&
+        isValidString(data.wpp, 8, 25) &&
+        data.pagamento in ['pix', 'cartao'] &&
+        data.total is number && data.total >= 0 && data.total <= 500000 &&
+        data.itens is list && data.itens.size() >= 1 && data.itens.size() <= 50 &&
+        data.itens[0] is map &&
+        data.status == 'pendente' &&
+        (data.uid == null || (isSignedIn() && data.uid == request.auth.uid)) &&
+        isValidOptionalString(data, 'endereco', 240) &&
+        isValidOptionalString(data, 'cidade', 100) &&
+        isValidOptionalString(data, 'estado', 4) &&
+        isValidOptionalString(data, 'cep', 12) &&
+        isValidOptionalString(data, 'complemento', 120) &&
+        isValidOptionalString(data, 'obs', 500) &&
+        isValidOptionalString(data, 'observacoes', 500) &&
+        isValidOptionalString(data, 'resumo', 1000) &&
+        (!( 'historicoStatus' in data ) || (data.historicoStatus is list && data.historicoStatus.size() <= 20)) &&
+        data.criadoEm == request.time;
+    }
+
+    function isValidReviewCreate(data) {
+      return data.keys().hasAll(['prodId', 'autor', 'nota', 'texto', 'status', 'criadoEm']) &&
+        data.keys().hasOnly(['prodId', 'prodNome', 'autor', 'nota', 'texto', 'status', 'uid', 'criadoEm', 'updAt']) &&
+        isValidId(data.prodId) &&
+        isValidString(data.autor, 1, 80) &&
+        isValidOptionalString(data, 'prodNome', 160) &&
+        data.nota is number && data.nota >= 1 && data.nota <= 5 &&
+        isValidString(data.texto, 2, 1000) &&
+        data.status == 'pending' &&
+        (data.uid == null || (isSignedIn() && data.uid == request.auth.uid)) &&
+        data.criadoEm == request.time &&
+        exists(/databases/$(database)/documents/produtos/$(data.prodId));
+    }
+
+    function isValidAnalyticsCreate(data) {
+      return data.keys().hasAll(['type', 'ts']) &&
+        data.keys().hasOnly(['type', 'prodId', 'uid', 'ts']) &&
+        data.type in ['view', 'add_cart', 'pedido_wpp'] &&
+        (!( 'prodId' in data ) || data.prodId == null || isValidId(data.prodId)) &&
+        (!( 'uid' in data ) || data.uid == null || (isSignedIn() && data.uid == request.auth.uid)) &&
+        data.ts == request.time;
+    }
+
+    function isValidCustoProduto(data) {
+      return data.keys().hasAll(['custo', 'custoBase']) &&
+        data.keys().hasOnly([
+          'custo', 'frete', 'deslocamento', 'margem', 'custoBase',
+          'custoUnitario', 'vendaPix', 'vendaCartao', 'atualizadoEm', 'syncedAt'
+        ]) &&
+        data.custo is number && data.custo >= 0 && data.custo <= 100000 &&
+        data.custoBase is number && data.custoBase >= 0 && data.custoBase <= 100000 &&
+        (!( 'frete' in data ) || (data.frete is number && data.frete >= 0 && data.frete <= 100000)) &&
+        (!( 'deslocamento' in data ) || (data.deslocamento is number && data.deslocamento >= 0 && data.deslocamento <= 100000)) &&
+        (!( 'margem' in data ) || (data.margem is number && data.margem >= 0 && data.margem <= 1000)) &&
+        (!( 'custoUnitario' in data ) || (data.custoUnitario is number && data.custoUnitario >= 0 && data.custoUnitario <= 100000)) &&
+        (!( 'vendaPix' in data ) || (data.vendaPix is number && data.vendaPix >= 0 && data.vendaPix <= 100000)) &&
+        (!( 'vendaCartao' in data ) || (data.vendaCartao is number && data.vendaCartao >= 0 && data.vendaCartao <= 100000));
+    }
+
+    function isValidClienteBw(data) {
+      return data.keys().hasAll(['nome']) &&
+        data.keys().hasOnly(['nome', 'contato', 'endereco', 'criadoEm', 'atualizadoEm', 'syncedAt']) &&
+        isValidString(data.nome, 1, 160) &&
+        isValidOptionalString(data, 'contato', 40) &&
+        isValidOptionalString(data, 'endereco', 300);
+    }
+
+    function isValidVendaBw(data) {
+      return data.keys().hasAll(['cliente', 'pagamento', 'status', 'valorLiquido']) &&
+        data.keys().hasOnly([
+          'data', 'cliente', 'contato', 'endereco', 'perfume', 'itens',
+          'valorCliente', 'valorLiquido', 'valor', 'taxaCartaoPerc', 'taxaCartaoReais',
+          'desconto', 'pagamento', 'status', 'parcelasTotais', 'parcelasPagas',
+          'datasParcelas', 'historicoParc', 'saldoRestante', 'retirada',
+          'custoTotal', 'freteTotal', 'deslocTotal', 'lucroEstimado',
+          'origemPedidoId', 'criadoEm', 'atualizadoEm', 'syncedAt'
+        ]) &&
+        isValidString(data.cliente, 1, 160) &&
+        data.pagamento in ['PIX', 'Dinheiro', 'Cartão', 'Fiado'] &&
+        data.status in ['Pago', 'Pendente'] &&
+        data.valorLiquido is number && data.valorLiquido >= 0 && data.valorLiquido <= 500000 &&
+        isValidOptionalString(data, 'data', 24) &&
+        isValidOptionalString(data, 'contato', 40) &&
+        isValidOptionalString(data, 'endereco', 300) &&
+        isValidOptionalString(data, 'perfume', 1000) &&
+        isValidOptionalString(data, 'origemPedidoId', 128) &&
+        (!( 'itens' in data ) || (data.itens is list && data.itens.size() <= 50)) &&
+        (!( 'datasParcelas' in data ) || (data.datasParcelas is list && data.datasParcelas.size() <= 36)) &&
+        (!( 'historicoParc' in data ) || (data.historicoParc is list && data.historicoParc.size() <= 100)) &&
+        (!( 'retirada' in data ) || data.retirada is bool);
+    }
+
+    match /test/connection {
+      allow get: if true;
+    }
+
+    match /produtos/{prodId} {
+      allow list: if true;
+      allow get: if isValidId(prodId);
+      allow create: if isValidId(prodId) && isAdmin() && isValidProduto(incoming());
+      allow update: if isValidId(prodId) && isAdmin() && isValidProduto(incoming()) &&
+        (!( 'criadoEm' in existing() ) || incoming().criadoEm == existing().criadoEm);
+      allow delete: if isValidId(prodId) && isAdmin();
+    }
+
+    match /categories/{catId} {
+      allow list: if true;
+      allow get: if isValidId(catId);
+      allow create: if isValidId(catId) && isAdmin() && isValidCategory(incoming());
+      allow update: if isValidId(catId) && isAdmin() && isValidCategory(incoming());
+      allow delete: if isValidId(catId) && isAdmin();
+    }
+
+    match /config/{configId} {
+      allow get: if isValidId(configId) && configId in ['settings', 'banners'];
+      allow list: if isAdmin();
+      allow create, update: if isValidId(configId) && configId in ['settings', 'banners'] && isAdmin();
+      allow delete: if false;
+    }
+
+    match /admins/{uid} {
+      allow get: if isValidId(uid) && isSignedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    match /clients/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) && isOwner(userId) && isValidClient(incoming());
+      allow update: if isValidId(userId) && isOwner(userId) && isValidClient(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'nome', 'email', 'wpp', 'cep', 'endereco', 'complemento',
+          'bairro', 'cidade', 'estado', 'favoritos', 'updAt'
+        ]);
+      allow delete: if false;
+
+      match /pedidos/{pedidoId} {
+        allow list: if isOwner(userId) || isAdmin();
+        allow get: if isValidId(pedidoId) && (isOwner(userId) || isAdmin());
+        allow create: if isValidId(pedidoId) && isOwner(userId) && isValidPedidoCreate(incoming());
+        allow update: if isValidId(pedidoId) && isAdmin();
+        allow delete: if isValidId(pedidoId) && isAdmin();
+      }
+    }
+
+    match /pedidos/{pedidoId} {
+      allow list: if (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow get: if isValidId(pedidoId) && ((isSignedIn() && existing().uid == request.auth.uid) || isAdmin());
+      allow create: if isValidId(pedidoId) && isValidPedidoCreate(incoming());
+      allow update: if isValidId(pedidoId) && isAdmin();
+      allow delete: if isValidId(pedidoId) && isAdmin();
+    }
+
+    match /reviews/{reviewId} {
+      allow list: if resource.data.status == 'approved' || (isSignedIn() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow get: if isValidId(reviewId) && (existing().status == 'approved' || (isSignedIn() && existing().uid == request.auth.uid) || isAdmin());
+      allow create: if isValidId(reviewId) && isValidReviewCreate(incoming());
+      allow update: if isValidId(reviewId) && isAdmin() &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updAt']) &&
+        incoming().status in ['pending', 'approved', 'rejected'];
+      allow delete: if isValidId(reviewId) && isAdmin();
+    }
+
+    match /analytics_events/{eventId} {
+      allow list, get: if isAdmin();
+      allow create: if isValidId(eventId) && isValidAnalyticsCreate(incoming());
+      allow update, delete: if false;
+    }
+
+    match /custos_produtos/{prodId} {
+      allow list: if isAdmin();
+      allow get: if isValidId(prodId) && isAdmin();
+      allow create, update: if isValidId(prodId) && isAdmin() && isValidCustoProduto(incoming());
+      allow delete: if isValidId(prodId) && isAdmin();
+    }
+
+    match /clientes_bw/{docId} {
+      allow list: if isAdmin();
+      allow get: if isValidId(docId) && isAdmin();
+      allow create, update: if isValidId(docId) && isAdmin() && isValidClienteBw(incoming());
+      allow delete: if isValidId(docId) && isAdmin();
+    }
+
+    match /vendas_bw/{docId} {
+      allow list: if isAdmin();
+      allow get: if isValidId(docId) && isAdmin();
+      allow create, update: if isValidId(docId) && isAdmin() && isValidVendaBw(incoming());
+      allow delete: if isValidId(docId) && isAdmin();
+    }
+  }
+}

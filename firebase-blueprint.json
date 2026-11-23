@@ -1,0 +1,245 @@
+{
+  "entities": {
+    "Produto": {
+      "title": "Produto",
+      "description": "Perfume ou kit do catálogo BW Parfum Imports.",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "marca": { "type": "string", "maxLength": 100 },
+        "preco": { "type": "number" },
+        "precoPix": { "type": "number" },
+        "precoOld": { "type": "number" },
+        "estoqueQtd": { "type": "number" },
+        "vol": { "type": "string", "maxLength": 40 },
+        "cat": { "type": "string", "maxLength": 40 },
+        "notas": { "type": "string", "maxLength": 300 },
+        "desc": { "type": "string", "maxLength": 3000 },
+        "estoqueAlerta": { "type": "number" },
+        "ordem": { "type": "number" },
+        "ativo": { "type": "boolean" },
+        "dest": { "type": "boolean" },
+        "promo": { "type": "boolean" },
+        "imgUrl": { "type": "string", "maxLength": 1000 },
+        "views": { "type": "number" },
+        "vendas": { "type": "number" },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "updAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "preco"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Categoria exibida na vitrine.",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "slug": { "type": "string", "minLength": 1, "maxLength": 40, "pattern": "^[a-zA-Z0-9_-]+$" },
+        "ico": { "type": "string", "maxLength": 16 },
+        "img": { "type": "string", "maxLength": 1000 },
+        "hidden": { "type": "boolean" },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "updAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "slug"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Dados cadastrais e endereço do cliente (PII restrito).",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 160 },
+        "wpp": { "type": "string", "maxLength": 20 },
+        "cep": { "type": "string", "maxLength": 12 },
+        "endereco": { "type": "string", "maxLength": 240 },
+        "complemento": { "type": "string", "maxLength": 120 },
+        "bairro": { "type": "string", "maxLength": 100 },
+        "cidade": { "type": "string", "maxLength": 100 },
+        "estado": { "type": "string", "maxLength": 4 },
+        "favoritos": { "type": "array" },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "updAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome"]
+    },
+    "Pedido": {
+      "title": "Pedido",
+      "description": "Pedido realizado via checkout da loja.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "nome": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "wpp": { "type": "string", "minLength": 8, "maxLength": 25 },
+        "endereco": { "type": "string", "maxLength": 240 },
+        "cidade": { "type": "string", "maxLength": 100 },
+        "estado": { "type": "string", "maxLength": 4 },
+        "cep": { "type": "string", "maxLength": 12 },
+        "complemento": { "type": "string", "maxLength": 120 },
+        "pagamento": { "type": "string", "enum": ["pix", "cartao"] },
+        "parcelas": { "type": "number" },
+        "valorParcela": { "type": "number" },
+        "total": { "type": "number" },
+        "subtotal": { "type": "number" },
+        "desconto": { "type": "number" },
+        "frete": { "type": "number" },
+        "obs": { "type": "string", "maxLength": 500 },
+        "observacoes": { "type": "string", "maxLength": 500 },
+        "itens": { "type": "array" },
+        "status": {
+          "type": "string",
+          "enum": ["pendente", "confirmado", "em_preparo", "enviado", "saiu_entrega", "entregue", "cancelado"]
+        },
+        "rastreio": { "type": "object" },
+        "historicoStatus": { "type": "array" },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "updAt": { "type": "string", "format": "date-time" },
+        "entregueEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "wpp", "pagamento", "total", "itens", "status", "criadoEm"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Avaliação de produto sujeita à moderação.",
+      "type": "object",
+      "properties": {
+        "prodId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "autor": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "nota": { "type": "number" },
+        "texto": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "uid": { "type": "string", "maxLength": 128 },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "updAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["prodId", "autor", "nota", "texto", "status", "criadoEm"]
+    },
+    "AnalyticsEvent": {
+      "title": "AnalyticsEvent",
+      "description": "Evento anônimo ou autenticado de visualização/carrinho.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["view", "add_cart", "pedido_wpp"] },
+        "prodId": { "type": "string", "maxLength": 128 },
+        "uid": { "type": "string", "maxLength": 128 },
+        "ts": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "ts"]
+    },
+    "CustoProduto": {
+      "title": "CustoProduto",
+      "description": "Estrutura privada de custo, frete, deslocamento e margem por produto (apenas admin).",
+      "type": "object",
+      "properties": {
+        "custo": { "type": "number" },
+        "frete": { "type": "number" },
+        "deslocamento": { "type": "number" },
+        "margem": { "type": "number" },
+        "custoBase": { "type": "number" },
+        "custoUnitario": { "type": "number" },
+        "vendaPix": { "type": "number" },
+        "vendaCartao": { "type": "number" },
+        "atualizadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["custo", "custoBase"]
+    },
+    "ClienteBw": {
+      "title": "ClienteBw",
+      "description": "Cliente cadastrado pelo painel administrativo para vendas manuais e fiado.",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "contato": { "type": "string", "maxLength": 30 },
+        "endereco": { "type": "string", "maxLength": 300 },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "atualizadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome"]
+    },
+    "VendaBw": {
+      "title": "VendaBw",
+      "description": "Venda manual (PDV) ou fiado registrado no painel administrativo.",
+      "type": "object",
+      "properties": {
+        "data": { "type": "string", "maxLength": 20 },
+        "cliente": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "contato": { "type": "string", "maxLength": 30 },
+        "endereco": { "type": "string", "maxLength": 300 },
+        "perfume": { "type": "string", "maxLength": 500 },
+        "itens": { "type": "array" },
+        "valorCliente": { "type": "number" },
+        "valorLiquido": { "type": "number" },
+        "valor": { "type": "number" },
+        "taxaCartaoPerc": { "type": "number" },
+        "taxaCartaoReais": { "type": "number" },
+        "desconto": { "type": "number" },
+        "pagamento": { "type": "string", "enum": ["PIX", "Dinheiro", "Cartão", "Fiado"] },
+        "status": { "type": "string", "enum": ["Pago", "Pendente"] },
+        "parcelasTotais": { "type": "number" },
+        "parcelasPagas": { "type": "number" },
+        "datasParcelas": { "type": "array" },
+        "historicoParc": { "type": "array" },
+        "saldoRestante": { "type": "number" },
+        "retirada": { "type": "boolean" },
+        "custoTotal": { "type": "number" },
+        "freteTotal": { "type": "number" },
+        "deslocTotal": { "type": "number" },
+        "lucroEstimado": { "type": "number" },
+        "origemPedidoId": { "type": "string", "maxLength": 128 },
+        "criadoEm": { "type": "string", "format": "date-time" },
+        "atualizadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["data", "cliente", "pagamento", "status", "valorLiquido"]
+    }
+  },
+  "firestore": {
+    "/produtos/{prodId}": {
+      "schema": { "$ref": "#/entities/Produto" },
+      "description": "Catálogo público de perfumes e kits."
+    },
+    "/custos_produtos/{prodId}": {
+      "schema": { "$ref": "#/entities/CustoProduto" },
+      "description": "Custos, frete e margem internos por produto (restrito a admin)."
+    },
+    "/categories/{catId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Categorias do catálogo."
+    },
+    "/config/{configId}": {
+      "schema": "object",
+      "description": "Configurações da loja e banners públicos (escrita exclusiva admin)."
+    },
+    "/clients/{userId}": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Perfil privado e endereços do cliente."
+    },
+    "/clients/{userId}/pedidos/{pedidoId}": {
+      "schema": { "$ref": "#/entities/Pedido" },
+      "description": "Histórico espelhado de pedidos do cliente."
+    },
+    "/pedidos/{pedidoId}": {
+      "schema": { "$ref": "#/entities/Pedido" },
+      "description": "Coleção principal de pedidos da loja."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Avaliações de clientes com moderação."
+    },
+    "/admins/{uid}": {
+      "schema": "object",
+      "description": "Registro de administradores."
+    },
+    "/analytics_events/{eventId}": {
+      "schema": { "$ref": "#/entities/AnalyticsEvent" },
+      "description": "Eventos de métrica da vitrine."
+    },
+    "/clientes_bw/{docId}": {
+      "schema": { "$ref": "#/entities/ClienteBw" },
+      "description": "Cadastro administrativo de clientes do PDV e fiado."
+    },
+    "/vendas_bw/{docId}": {
+      "schema": { "$ref": "#/entities/VendaBw" },
+      "description": "Vendas manuais, fiados e controle financeiro administrativo."
+    }
+  }
+}
